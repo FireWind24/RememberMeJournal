@@ -20,14 +20,6 @@ export default defineConfig({
           { src: '/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' },
           { src: '/icon.svg', sizes: '512x512', type: 'image/svg+xml' }
         ]
-      },
-      workbox: {
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: 'CacheFirst',
-          }
-        ]
       }
     })
   ],
