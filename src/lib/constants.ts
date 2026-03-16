@@ -40,7 +40,7 @@ export const THEMES_DARK: Record<string, Partial<Theme>> = {
   vanilla:  { vanilla: '#1A1820', cream: '#221F2A', sage: '#6A9E7E', sageLight: '#1C2C22', rose: '#C47078' },
   lavender: { vanilla: '#1A1828', cream: '#22203A', sage: '#9B8EC4', sageLight: '#1E1A30', rose: '#B490C0' },
   ocean:    { vanilla: '#181C28', cream: '#1E2430', sage: '#5B9BB5', sageLight: '#182030', rose: '#6090A8' },
-  forest:   { vanilla: '#181C18', cream: '#1E2420', sage: '#5A8A5A', sageLight: '#182018', rose: '#7A6050' },
+  forest:   { vanilla: '#1A2018', cream: '#222E22', sage: '#6AAE6A', sageLight: '#1E2C1E', rose: '#A07868' },
   peach:    { vanilla: '#201A18', cream: '#2A2220', sage: '#C4845A', sageLight: '#281E18', rose: '#C47080' },
 }
 
