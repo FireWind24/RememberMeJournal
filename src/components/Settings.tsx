@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { useStore } from '@/store/useStore'
-import { isSupabaseConfigured, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut } from '@/lib/supabase'
+import { isSupabaseConfigured, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut, saveReminderTime } from '@/lib/supabase'
 import { THEMES, STICKERS } from '@/lib/constants'
 import type { JournalEntry, ThemeKey } from '@/types'
 import { useNotifications } from '@/hooks/useNotifications'
@@ -15,7 +15,8 @@ export function Settings() {
   const { permission, scheduleReminder, clearReminder, getReminderTime } = useNotifications()
   const [reminderTime, setReminderTime] = useState(() => {
     const t = getReminderTime()
-    return t ? `${String(t.hour).padStart(2,'0')}:${String(t.minute).padStart(2,'0')}` : ''
+    if (t) return `${String(t.hour).padStart(2,'0')}:${String(t.minute).padStart(2,'0')}`
+    return user?.reminderTime ?? ''
   })
   const [authMode, setAuthMode] = useState<'idle' | 'signin' | 'signup'>('idle')
   const [email, setEmail] = useState('')
@@ -172,7 +173,7 @@ export function Settings() {
             ].map(s => (
               <div key={s.label} style={{ textAlign: 'center', background: 'rgba(255,255,255,0.4)', borderRadius: 8, padding: '6px 4px' }}>
                 <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>{s.value}</div>
-                <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--muted)' }}>{s.label}</div>
+                <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--sage)' }}>{s.label}</div>
               </div>
             ))}
           </div>
@@ -281,13 +282,15 @@ export function Settings() {
           ) : (
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <input type="time" value={reminderTime}
-                onChange={e => {
+                onChange={async e => {
                   setReminderTime(e.target.value)
                   if (e.target.value) {
                     const [h, m] = e.target.value.split(':').map(Number)
                     scheduleReminder(h, m)
+                    if (user) await saveReminderTime(user.id, e.target.value)
                   } else {
                     clearReminder()
+                    if (user) await saveReminderTime(user.id, null)
                   }
                 }}
                 style={{ flex: 1, padding: '8px 12px', border: '1.5px solid var(--border)', borderRadius: 10, fontFamily: 'Quicksand', fontSize: 13, fontWeight: 600, color: 'var(--text)', background: 'var(--white)', outline: 'none' }}

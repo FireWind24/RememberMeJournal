@@ -1,18 +1,30 @@
+import { useEffect } from 'react'
 import { useStore } from '@/store/useStore'
+import { useDeleteEntry } from '@/hooks/useSupabaseSync'
 import { MOOD_MAP, MOODS } from '@/lib/constants'
 import { countWords } from '@/lib/utils'
 import { TagPill } from './index'
 import { format } from 'date-fns'
 
 export function EntryModal() {
+  const handleDelete = useDeleteEntry()
+  const { updateEntry } = useStore()
   const {
-    entries, selectedEntryId, setSelectedEntry, deleteEntry, toggleFavorite,
+    entries, selectedEntryId, setSelectedEntry, toggleFavorite,
     editingEntryId, editContent, editSubject, editMood,
     startEditing, cancelEditing, setEditContent, setEditSubject, setEditMood, saveEdit,
     collections,
   } = useStore()
 
   const entry = entries.find(e => e.id === selectedEntryId)
+
+  // Mark time capsule as delivered once opened
+  useEffect(() => {
+    if (entry?.timeCapsuleDate && new Date(entry.timeCapsuleDate) <= new Date() && !entry.timeCapsuleDelivered) {
+      updateEntry(entry.id, { timeCapsuleDelivered: true })
+    }
+  }, [entry?.id])
+
   if (!entry) return null
 
   const mood      = entry.mood ? MOOD_MAP[entry.mood] : null
@@ -91,7 +103,7 @@ export function EntryModal() {
         ) : (
           <>
             {/* Time capsule unlock banner */}
-            {entry.timeCapsuleDate && new Date(entry.timeCapsuleDate) <= new Date() && (
+            {entry.timeCapsuleDate && new Date(entry.timeCapsuleDate) <= new Date() && !entry.timeCapsuleDelivered && (
               <div style={{ padding: '12px 14px', background: 'var(--rose-light)', border: '1.5px solid var(--rose)', borderRadius: 12, marginBottom: 14, textAlign: 'center' }}>
                 <p style={{ fontSize: 20, marginBottom: 4 }}>🎉</p>
                 <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--rose)' }}>Your time capsule just unlocked!</p>
@@ -127,7 +139,7 @@ export function EntryModal() {
             )}
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={() => startEditing(entry.id)} className="btn-secondary" style={{ flex: 1 }}>✏ Edit</button>
-              <button onClick={() => { deleteEntry(entry.id); setSelectedEntry(null) }}
+              <button onClick={() => { handleDelete(entry.id); setSelectedEntry(null) }}
                 style={{ flex: 1, padding: '10px', background: 'var(--rose-light)', color: 'var(--rose)', border: 'none', borderRadius: 11, cursor: 'pointer', fontFamily: 'Quicksand', fontSize: 13, fontWeight: 700 }}>
                 Delete
               </button>
