@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { useStore } from '@/store/useStore'
-import { isSupabaseConfigured, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut, saveReminderTime } from '@/lib/supabase'
+import { isSupabaseConfigured, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut } from '@/lib/supabase'
 import { THEMES, STICKERS } from '@/lib/constants'
 import type { JournalEntry, ThemeKey } from '@/types'
 import { useNotifications } from '@/hooks/useNotifications'
@@ -16,7 +16,7 @@ export function Settings() {
   const [reminderTime, setReminderTime] = useState(() => {
     const t = getReminderTime()
     if (t) return `${String(t.hour).padStart(2,'0')}:${String(t.minute).padStart(2,'0')}`
-    return user?.reminderTime ?? ''
+    return ''
   })
   const [authMode, setAuthMode] = useState<'idle' | 'signin' | 'signup'>('idle')
   const [email, setEmail] = useState('')
@@ -287,11 +287,9 @@ export function Settings() {
                   if (e.target.value) {
                     const [h, m] = e.target.value.split(':').map(Number)
                     scheduleReminder(h, m)
-                    if (user) await saveReminderTime(user.id, e.target.value)
-                  } else {
+                                  } else {
                     clearReminder()
-                    if (user) await saveReminderTime(user.id, null)
-                  }
+                                  }
                 }}
                 style={{ flex: 1, padding: '8px 12px', border: '1.5px solid var(--border)', borderRadius: 10, fontFamily: 'Quicksand', fontSize: 13, fontWeight: 600, color: 'var(--text)', background: 'var(--white)', outline: 'none' }}
                 onFocus={e => e.target.style.borderColor = 'var(--sage)'}

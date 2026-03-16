@@ -1,5 +1,4 @@
 import { useStore } from '@/store/useStore'
-import { useDeleteEntry } from '@/hooks/useSupabaseSync'
 import { TagPill } from './index'
 import { countWords } from '@/lib/utils'
 import { MOOD_MAP } from '@/lib/constants'
@@ -9,7 +8,6 @@ import type { JournalEntry } from '@/types'
 
 export function EntryCard({ entry }: { entry: JournalEntry }) {
   const { setSelectedEntry, toggleFavorite } = useStore()
-  const deleteEntry = useDeleteEntry()
   const mood = entry.mood ? MOOD_MAP[entry.mood] : null
   const createdAt = new Date(entry.createdAt)
 
