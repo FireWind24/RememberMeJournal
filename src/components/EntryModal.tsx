@@ -101,8 +101,9 @@ export function EntryModal() {
           onTouchStart={onDragStart}
           onTouchMove={onDragMove}
           onTouchEnd={onDragEnd}
-          style={{ width: 32, height: 4, borderRadius: 2, background: 'var(--border)', margin: '0 auto 14px', cursor: 'grab', touchAction: 'none' }}
-        />
+          style={{ width: 'calc(100% + 32px)', margin: '-16px -16px 0', padding: '14px 16px 12px', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'grab', touchAction: 'none' }}>
+          <div style={{ width: 40, height: 5, borderRadius: 3, background: 'var(--border)' }} />
+        </div>
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 14 }}>
