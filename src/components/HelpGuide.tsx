@@ -13,7 +13,7 @@ const SECTIONS: Section[] = [
     items: [
       { tip: 'Give it a title', detail: 'The little title field at the top is optional but it makes your entries so much easier to find later. Even just a few words like "rough day" or "something good happened" works.' },
       { tip: 'Pick a mood first', detail: 'Tap one of the six mood petals before you write -- joyful, calm, sad, loved, fired up, or dreamy. It colors your garden and helps you see patterns over time.' },
-      { tip: 'Formatting while writing', detail: 'You can use simple markdown as you type. Wrap words in **double stars** to make them bold, *single stars* for italic, and __double underscores__ to underline. When you read the entry it'll look beautiful.' },
+      { tip: 'Formatting while writing', detail: 'You can format as you write: double stars for bold, single stars for italic, double underscores to underline. Renders beautifully when you read it back.' },
       { tip: 'Word goal', detail: 'Set a daily word goal in the You tab and a little progress bar shows up as you write. Even 50 words a day adds up to something real.' },
       { tip: 'Time capsule', detail: 'Tap the ⏳ button before saving to lock an entry until a future date. You won\'t be able to read it until then -- it\'s like writing a letter to your future self.' },
       { tip: 'Assign a notebook', detail: 'If you have notebooks set up, you can assign the entry to one before saving. Great for keeping dreams, gratitude, or work thoughts separate.' },
