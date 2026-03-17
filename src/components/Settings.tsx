@@ -75,6 +75,14 @@ export function Settings() {
       joy: '#F6C95E', calm: '#8AB49A', sad: '#89A8C8',
       love: '#E8A0B4', fire: '#E8825A', dream: '#B8A0D8',
     }
+    // Read current theme colors from CSS variables
+    const root = document.documentElement
+    const style = getComputedStyle(root)
+    const bgColor = style.getPropertyValue('--vanilla').trim() || '#FFFDD0'
+    const textColor = style.getPropertyValue('--text').trim() || '#4A3F4A'
+    const borderColor = style.getPropertyValue('--border').trim() || '#E2D9CE'
+    const mutedColor = style.getPropertyValue('--muted').trim() || '#9A8A9A'
+
     const renderContent = (text: string) =>
       text
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
@@ -106,19 +114,19 @@ export function Settings() {
     const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Remember Me</title>' +
       '<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">' +
       '<style>' +
-      '* { margin:0; padding:0; box-sizing:border-box; }' +
-      'body { font-family: Lora, serif; background: #FFFDD0; color: #4A3F4A; padding: 48px; max-width: 680px; margin: 0 auto; }' +
-      '.cover { text-align:center; padding: 60px 0 48px; border-bottom: 1px solid #E2D9CE; margin-bottom: 48px; }' +
-      '.cover h1 { font-family: Quicksand, sans-serif; font-size: 32px; font-weight: 700; margin-bottom: 8px; }' +
-      '.cover p { font-size: 13px; color: #9A8A9A; font-family: Quicksand, sans-serif; }' +
-      '.entry { margin-bottom: 48px; padding-bottom: 48px; border-bottom: 1px solid #E2D9CE; page-break-inside: avoid; }' +
+      '* { margin:0; padding:0; box-sizing:border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }' +
+      'body { font-family: Lora, serif; background: ' + bgColor + '; color: ' + textColor + '; padding: 48px; max-width: 680px; margin: 0 auto; }' +
+      '.cover { text-align:center; padding: 60px 0 48px; border-bottom: 1px solid ' + borderColor + '; margin-bottom: 48px; }' +
+      '.cover h1 { font-family: Quicksand, sans-serif; font-size: 32px; font-weight: 700; margin-bottom: 8px; color: ' + textColor + '; }' +
+      '.cover p { font-size: 13px; color: ' + mutedColor + '; font-family: Quicksand, sans-serif; }' +
+      '.entry { margin-bottom: 48px; padding-bottom: 48px; border-bottom: 1px solid ' + borderColor + '; page-break-inside: avoid; }' +
       '.entry:last-child { border-bottom: none; }' +
-      '.meta { font-family: Quicksand, sans-serif; font-size: 11px; font-weight: 700; color: #9A8A9A; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }' +
+      '.meta { font-family: Quicksand, sans-serif; font-size: 11px; font-weight: 700; color: ' + mutedColor + '; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }' +
       '.dot { width: 8px; height: 8px; border-radius: 50% 50% 0 50%; display: inline-block; flex-shrink: 0; }' +
-      '.subject { font-family: Quicksand, sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 12px; line-height: 1.3; }' +
-      '.body { font-size: 15px; line-height: 1.9; }' +
-      '.words { font-family: Quicksand, sans-serif; font-size: 10px; color: #9A8A9A; margin-top: 10px; }' +
-      '@media print { body { background: white; padding: 32px; } }' +
+      '.subject { font-family: Quicksand, sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 12px; line-height: 1.3; color: ' + textColor + '; }' +
+      '.body { font-size: 15px; line-height: 1.9; color: ' + textColor + '; }' +
+      '.words { font-family: Quicksand, sans-serif; font-size: 10px; color: ' + mutedColor + '; margin-top: 10px; }' +
+      '@media print { body { background: ' + bgColor + ' !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }' +
       '</style></head><body>' +
       '<div class="cover"><h1>Remember Me ✿</h1><p>Exported ' + exportDate + '</p><p style="margin-top:4px">' + entries.length + ' entries</p></div>' +
       entryRows +
