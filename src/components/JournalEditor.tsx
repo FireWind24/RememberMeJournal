@@ -4,29 +4,7 @@ import { useSaveEntry } from '@/hooks'
 import { MoodPetals } from './MoodPetals'
 import { TagPill } from './index'
 import { countWords } from '@/lib/utils'
-import { haptic } from '@/lib/haptics'
 import type { MoodKey } from '@/types'
-
-// ─── Formatting toolbar ───────────────────────────────────────────────────────
-function FormatBar({ onFormat }: { onFormat: (type: string) => void }) {
-  const btns = [
-    { label: 'B', title: 'Bold',          type: 'bold',      style: { fontWeight: 700 } },
-    { label: 'I', title: 'Italic',         type: 'italic',    style: { fontStyle: 'italic' } },
-    { label: 'U', title: 'Underline',      type: 'underline', style: { textDecoration: 'underline' } },
-    { label: '❝', title: 'Quote',          type: 'quote',     style: {} },
-    { label: '—', title: 'Divider',        type: 'divider',   style: {} },
-  ]
-  return (
-    <div style={{ display: 'flex', gap: 4 }}>
-      {btns.map(b => (
-        <button key={b.type} title={b.title} onClick={() => onFormat(b.type)}
-          style={{ padding: '4px 8px', borderRadius: 8, border: '1.5px solid var(--border)', background: 'var(--white)', cursor: 'pointer', fontFamily: 'Quicksand', fontSize: 13, fontWeight: 600, color: 'var(--text)', lineHeight: 1, ...b.style }}>
-          {b.label}
-        </button>
-      ))}
-    </div>
-  )
-}
 
 // ─── Entry saved toast ────────────────────────────────────────────────────────
 function SavedToast({ show }: { show: boolean }) {
@@ -76,50 +54,6 @@ export function JournalEditor() {
   const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1)
   const minDate = tomorrow.toISOString().slice(0, 10)
 
-  // Apply markdown-style formatting with smart cursor placement
-  const handleFormat = (type: string) => {
-    const el = textareaRef.current; if (!el) return
-    const start = el.selectionStart
-    const end = el.selectionEnd
-    const selected = draftContent.slice(start, end)
-    const before = draftContent.slice(0, start)
-    const after = draftContent.slice(end)
-    const hasSelection = start !== end
-
-    let replacement = ''
-    let cursorOffset = 0 // where to place cursor inside the wrapper
-
-    if (type === 'bold') {
-      replacement = hasSelection ? `**${selected}**` : `****`
-      cursorOffset = hasSelection ? replacement.length : 2
-    }
-    if (type === 'italic') {
-      replacement = hasSelection ? `*${selected}*` : `**`
-      cursorOffset = hasSelection ? replacement.length : 1
-    }
-    if (type === 'underline') {
-      replacement = hasSelection ? `__${selected}__` : `____`
-      cursorOffset = hasSelection ? replacement.length : 2
-    }
-    if (type === 'quote') {
-      replacement = `\n> ${selected || ''}`
-      cursorOffset = replacement.length
-    }
-    if (type === 'divider') {
-      replacement = `\n---\n`
-      cursorOffset = replacement.length
-    }
-
-    const newContent = before + replacement + after
-    setDraftContent(newContent)
-
-    setTimeout(() => {
-      el.focus()
-      const pos = start + cursorOffset
-      el.setSelectionRange(pos, pos)
-    }, 0)
-    haptic('light')
-  }
 
   const handleSaveWithToast = async () => {
     await handleSave()
@@ -152,9 +86,6 @@ export function JournalEditor() {
         onFocus={e => e.currentTarget.style.borderColor = 'var(--sage)'}
         onBlur={e => e.currentTarget.style.borderColor = 'var(--border)'}
       />
-
-      {/* Format bar */}
-      <FormatBar onFormat={handleFormat} />
 
       {/* Content */}
       <div style={{ position: 'relative' }}>

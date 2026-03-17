@@ -4,6 +4,7 @@ import { isSupabaseConfigured, signInWithGoogle, signInWithEmail, signUpWithEmai
 import { THEMES, STICKERS } from '@/lib/constants'
 import type { JournalEntry, ThemeKey } from '@/types'
 import { useNotifications } from '@/hooks/useNotifications'
+import { HelpGuide } from './HelpGuide'
 
 export function Settings() {
   const {
@@ -327,6 +328,8 @@ export function Settings() {
         </Row>
         <input ref={fileInputRef} type="file" accept=".json" style={{ display: 'none' }} onChange={handleImport} />
       </div>
+
+      <HelpGuide />
 
       <div style={{ height: 4 }} />
       <p style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, color: 'var(--muted)', paddingBottom: 8 }}>
