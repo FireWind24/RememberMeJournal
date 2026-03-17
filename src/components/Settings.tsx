@@ -32,7 +32,7 @@ export function Settings() {
   const earned      = getDisplayStickers()
   const recap       = useStore(s => s.getWeeklyRecap())
 
-  const handleSignOut = async () => { await signOut(); setUser(null) }
+  const handleSignOut = () => { signOut().finally(() => window.location.reload()) }
 
   const handleEmailAuth = async () => {
     if (!email || !password) { setAuthError('Please enter email and password'); return }
