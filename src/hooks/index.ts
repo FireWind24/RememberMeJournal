@@ -11,16 +11,7 @@ export function useDebounce<T>(value: T, delay: number): T {
   return debounced
 }
 
-export function useAutoAnalyze() {
-  const { draftContent, draftMood, analyzeContent } = useStore()
-  const timerRef = useRef<ReturnType<typeof setTimeout>>()
-  useEffect(() => {
-    clearTimeout(timerRef.current)
-    if (draftContent.length < 20) return
-    timerRef.current = setTimeout(() => analyzeContent(draftContent, draftMood), 1400)
-    return () => clearTimeout(timerRef.current)
-  }, [draftContent, draftMood, analyzeContent])
-}
+export function useAutoAnalyze() { /* AI nudges removed */ }
 
 export function useGardenData() {
   const { entries, selectedGardenMonth: { year, month } } = useStore()

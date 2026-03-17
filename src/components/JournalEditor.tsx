@@ -1,22 +1,63 @@
 import { useRef, useEffect, useState } from 'react'
 import { useStore } from '@/store/useStore'
-import { useAutoAnalyze, useSaveEntry } from '@/hooks'
+import { useSaveEntry } from '@/hooks'
 import { MoodPetals } from './MoodPetals'
 import { TagPill } from './index'
 import { countWords } from '@/lib/utils'
+import { haptic } from '@/lib/haptics'
 import type { MoodKey } from '@/types'
+
+// ─── Formatting toolbar ───────────────────────────────────────────────────────
+function FormatBar({ onFormat }: { onFormat: (type: string) => void }) {
+  const btns = [
+    { label: 'B', title: 'Bold',          type: 'bold',      style: { fontWeight: 700 } },
+    { label: 'I', title: 'Italic',         type: 'italic',    style: { fontStyle: 'italic' } },
+    { label: 'U', title: 'Underline',      type: 'underline', style: { textDecoration: 'underline' } },
+    { label: '❝', title: 'Quote',          type: 'quote',     style: {} },
+    { label: '—', title: 'Divider',        type: 'divider',   style: {} },
+  ]
+  return (
+    <div style={{ display: 'flex', gap: 4 }}>
+      {btns.map(b => (
+        <button key={b.type} title={b.title} onClick={() => onFormat(b.type)}
+          style={{ padding: '4px 8px', borderRadius: 8, border: '1.5px solid var(--border)', background: 'var(--white)', cursor: 'pointer', fontFamily: 'Quicksand', fontSize: 13, fontWeight: 600, color: 'var(--text)', lineHeight: 1, ...b.style }}>
+          {b.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+// ─── Entry saved toast ────────────────────────────────────────────────────────
+function SavedToast({ show }: { show: boolean }) {
+  return (
+    <div style={{
+      position: 'fixed', bottom: 80, left: '50%', transform: `translateX(-50%) translateY(${show ? 0 : 20}px)`,
+      opacity: show ? 1 : 0, transition: 'all 0.35s var(--spring)',
+      background: 'var(--sage)', color: '#fff',
+      padding: '10px 20px', borderRadius: 24,
+      fontSize: 13, fontWeight: 700,
+      boxShadow: '0 4px 20px rgba(74,63,74,0.2)',
+      pointerEvents: 'none', zIndex: 300,
+      display: 'flex', alignItems: 'center', gap: 7,
+      whiteSpace: 'nowrap',
+    }}>
+      ✿ Entry added!
+    </div>
+  )
+}
 
 export function JournalEditor() {
   const {
     draftContent, draftSubject, draftMood, draftCollectionId, draftTimeCapsuleDate,
     setDraftContent, setDraftSubject, setDraftMood, setDraftCollection, setDraftTimeCapsuleDate,
-    currentNudge, currentTags, isAnalyzing,
+    currentTags,
     collections, wordCountGoal, entries,
   } = useStore()
   const { handleSave, canSave, isSaving } = useSaveEntry()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [showCapsule, setShowCapsule] = useState(false)
-  useAutoAnalyze()
+  const [showToast, setShowToast] = useState(false)
 
   useEffect(() => {
     const el = textareaRef.current; if (!el) return
@@ -32,9 +73,42 @@ export function JournalEditor() {
 
   const onThisDay = useStore(s => s.getOnThisDay())
 
-  // Min date for time capsule = tomorrow
   const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1)
   const minDate = tomorrow.toISOString().slice(0, 10)
+
+  // Apply markdown-style formatting to textarea selection
+  const handleFormat = (type: string) => {
+    const el = textareaRef.current; if (!el) return
+    const start = el.selectionStart
+    const end = el.selectionEnd
+    const selected = draftContent.slice(start, end)
+    const before = draftContent.slice(0, start)
+    const after = draftContent.slice(end)
+
+    let replacement = ''
+    if (type === 'bold')      replacement = `**${selected || 'bold text'}**`
+    if (type === 'italic')    replacement = `*${selected || 'italic text'}*`
+    if (type === 'underline') replacement = `__${selected || 'underlined'}__`
+    if (type === 'quote')     replacement = `\n> ${selected || 'quote...'}\n`
+    if (type === 'divider')   replacement = `\n---\n`
+
+    const newContent = before + replacement + after
+    setDraftContent(newContent)
+
+    // Restore cursor after the inserted text
+    setTimeout(() => {
+      el.focus()
+      const pos = start + replacement.length
+      el.setSelectionRange(pos, pos)
+    }, 0)
+    haptic('light')
+  }
+
+  const handleSaveWithToast = async () => {
+    await handleSave()
+    setShowToast(true)
+    setTimeout(() => setShowToast(false), 2000)
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }} className="animate-fade-up">
@@ -61,6 +135,9 @@ export function JournalEditor() {
         onFocus={e => e.currentTarget.style.borderColor = 'var(--sage)'}
         onBlur={e => e.currentTarget.style.borderColor = 'var(--border)'}
       />
+
+      {/* Format bar */}
+      <FormatBar onFormat={handleFormat} />
 
       {/* Content */}
       <div style={{ position: 'relative' }}>
@@ -97,13 +174,6 @@ export function JournalEditor() {
         </div>
       )}
 
-      {/* AI nudge */}
-      {currentNudge && draftContent.length > 30 && !isAnalyzing && (
-        <p style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 600, fontStyle: 'italic', paddingLeft: 4 }}>
-          🌿 {currentNudge}
-        </p>
-      )}
-
       {/* Bottom row: notebook + time capsule */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
         {collections.length > 0 && (
@@ -121,8 +191,6 @@ export function JournalEditor() {
             ))}
           </div>
         )}
-
-        {/* Time capsule toggle */}
         <button onClick={() => setShowCapsule(!showCapsule)}
           style={{ padding: '5px 11px', borderRadius: 20, border: `1.5px solid ${draftTimeCapsuleDate ? 'var(--rose)' : 'var(--border)'}`, background: draftTimeCapsuleDate ? 'var(--rose-light)' : 'transparent', fontFamily: 'Quicksand', fontSize: 11, fontWeight: 700, cursor: 'pointer', color: draftTimeCapsuleDate ? 'var(--rose)' : 'var(--muted)', whiteSpace: 'nowrap' }}>
           ⏳ {draftTimeCapsuleDate ? `Locked until ${draftTimeCapsuleDate}` : 'Time capsule'}
@@ -134,7 +202,7 @@ export function JournalEditor() {
         <div style={{ padding: '12px 14px', background: 'var(--cream-dark)', borderRadius: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
           <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)' }}>⏳ Lock until a future date</p>
           <p style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 600, lineHeight: 1.5 }}>
-            This entry will be hidden until the date you choose. You'll see it unlock when you open the app.
+            This entry will be hidden until the date you choose.
           </p>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <input type="date" min={minDate} value={draftTimeCapsuleDate ?? ''}
@@ -153,9 +221,11 @@ export function JournalEditor() {
         </div>
       )}
 
-      <button className={`btn-primary ${isSaving ? 'saved' : ''}`} onClick={handleSave} disabled={!canSave}>
-        {isSaving ? 'Saved ✿' : draftTimeCapsuleDate ? '⏳ Save & lock entry' : "Save today's entry ✿"}
+      <button className={`btn-primary ${isSaving ? 'saved' : ''}`} onClick={handleSaveWithToast} disabled={!canSave}>
+        {isSaving ? 'Saving…' : draftTimeCapsuleDate ? '⏳ Save & lock entry' : "Save today's entry ✿"}
       </button>
+
+      <SavedToast show={showToast} />
     </div>
   )
 }

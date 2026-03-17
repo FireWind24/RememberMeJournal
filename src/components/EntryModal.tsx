@@ -1,10 +1,43 @@
 import { useEffect } from 'react'
+import React from 'react'
 import { useStore } from '@/store/useStore'
 import { useDeleteEntry } from '@/hooks/useSupabaseSync'
 import { MOOD_MAP, MOODS } from '@/lib/constants'
 import { countWords } from '@/lib/utils'
 import { TagPill } from './index'
 import { format } from 'date-fns'
+
+
+function renderMarkdown(text: string): React.ReactNode[] {
+  const lines = text.split('\n')
+  return lines.map((line, i) => {
+    // Divider
+    if (line.trim() === '---') return <hr key={i} style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '8px 0' }} />
+    // Blockquote
+    if (line.startsWith('> ')) {
+      const content = line.slice(2)
+      return <blockquote key={i} style={{ borderLeft: '3px solid var(--sage)', paddingLeft: 12, margin: '4px 0', color: 'var(--muted)', fontStyle: 'italic', fontSize: 13 }}>{content}</blockquote>
+    }
+    // Inline formatting: bold, italic, underline
+    const parts: React.ReactNode[] = []
+    let remaining = line
+    let key = 0
+    while (remaining.length > 0) {
+      const boldMatch = remaining.match(/^(.*?)\*\*(.+?)\*\*/)
+      const italicMatch = remaining.match(/^(.*?)\*(.+?)\*/)
+      const underlineMatch = remaining.match(/^(.*?)__(.+?)__/)
+      const matches = [boldMatch, italicMatch, underlineMatch].filter(Boolean) as RegExpMatchArray[]
+      if (matches.length === 0) { parts.push(<span key={key++}>{remaining}</span>); break }
+      const first = matches.sort((a, b) => a[1].length - b[1].length)[0]
+      if (first[1]) parts.push(<span key={key++}>{first[1]}</span>)
+      if (first === boldMatch)      parts.push(<strong key={key++} style={{ fontWeight: 700 }}>{first[2]}</strong>)
+      else if (first === italicMatch)   parts.push(<em key={key++}>{first[2]}</em>)
+      else if (first === underlineMatch) parts.push(<u key={key++}>{first[2]}</u>)
+      remaining = remaining.slice(first[1].length + first[0].length - first[1].length)
+    }
+    return <p key={i} style={{ margin: '2px 0', lineHeight: 1.8 }}>{parts}</p>
+  })
+}
 
 export function EntryModal() {
   const handleDelete = useDeleteEntry()
@@ -123,19 +156,13 @@ export function EntryModal() {
             {entry.subject && (
               <p style={{ fontSize: 17, fontWeight: 700, color: 'var(--text)', marginBottom: 10, lineHeight: 1.3 }}>{entry.subject}</p>
             )}
-            <p style={{ fontSize: 14, lineHeight: 1.8, color: 'var(--text)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', marginBottom: 14 }}>
-              {entry.content}
-            </p>
+            <div style={{ fontSize: 14, color: 'var(--text)', wordBreak: 'break-word', marginBottom: 14 }}>
+              {renderMarkdown(entry.content)}
+            </div>
             {entry.tags.length > 0 && (
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
                 {entry.tags.map(t => <TagPill key={t} label={t} />)}
               </div>
-            )}
-            {/* AI nudge — no green box, just italic text */}
-            {entry.aiNudge && (
-              <p style={{ fontSize: 12, color: 'var(--muted)', fontStyle: 'italic', fontWeight: 600, marginBottom: 14, paddingLeft: 2 }}>
-                🌿 {entry.aiNudge}
-              </p>
             )}
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={() => startEditing(entry.id)} className="btn-secondary" style={{ flex: 1 }}>✏ Edit</button>
