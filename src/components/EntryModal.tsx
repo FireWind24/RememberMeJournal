@@ -47,6 +47,7 @@ export function EntryModal() {
   const dragStartY = useRef<number | null>(null)
   const [dragY, setDragY] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
 
   const onDragStart = (e: React.TouchEvent) => {
     dragStartY.current = e.touches[0].clientY
@@ -55,12 +56,19 @@ export function EntryModal() {
   const onDragMove = (e: React.TouchEvent) => {
     if (dragStartY.current === null) return
     const dy = e.touches[0].clientY - dragStartY.current
-    if (dy > 0) setDragY(dy)
+    if (isFullscreen && dy > 0) setDragY(dy) // fullscreen: only allow drag down to exit
+    else if (!isFullscreen) setDragY(dy)     // normal: allow both up and down
   }
   const onDragEnd = () => {
-    if (dragY > 80) {
-      cancelEditing()
-      useStore.getState().setSelectedEntry(null)
+    if (isFullscreen) {
+      if (dragY > 80) setIsFullscreen(false) // drag down exits fullscreen
+    } else {
+      if (dragY > 80) {
+        cancelEditing()
+        useStore.getState().setSelectedEntry(null)
+      } else if (dragY < -60) {
+        setIsFullscreen(true)
+      }
     }
     setDragY(0)
     setIsDragging(false)
@@ -95,7 +103,9 @@ export function EntryModal() {
     <div className="entry-overlay" onClick={e => { if (e.target === e.currentTarget) { cancelEditing(); setSelectedEntry(null) } }}>
       <div className="entry-modal" style={{
           transform: `translateY(${dragY}px)`,
-          transition: isDragging ? 'none' : 'transform 0.3s var(--spring)',
+          transition: isDragging ? 'none' : 'all 0.35s var(--spring)',
+          maxHeight: isFullscreen ? '100%' : '82%',
+          borderRadius: isFullscreen ? '0' : '22px 22px 0 0',
         }}>
         <div
           onTouchStart={onDragStart}
