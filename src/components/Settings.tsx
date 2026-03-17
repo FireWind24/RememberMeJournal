@@ -412,7 +412,7 @@ export function Settings() {
 
       <div style={{ height: 4 }} />
       <p style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, color: 'var(--muted)', paddingBottom: 8 }}>
-        Made for Ammu with ❤️ by Umo 
+        made by Umo with ❤️ for ammu
       </p>
     </div>
   )
