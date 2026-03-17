@@ -76,7 +76,7 @@ export function JournalEditor() {
   const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1)
   const minDate = tomorrow.toISOString().slice(0, 10)
 
-  // Apply markdown-style formatting to textarea selection
+  // Apply markdown-style formatting with smart cursor placement
   const handleFormat = (type: string) => {
     const el = textareaRef.current; if (!el) return
     const start = el.selectionStart
@@ -84,21 +84,38 @@ export function JournalEditor() {
     const selected = draftContent.slice(start, end)
     const before = draftContent.slice(0, start)
     const after = draftContent.slice(end)
+    const hasSelection = start !== end
 
     let replacement = ''
-    if (type === 'bold')      replacement = `**${selected || 'bold text'}**`
-    if (type === 'italic')    replacement = `*${selected || 'italic text'}*`
-    if (type === 'underline') replacement = `__${selected || 'underlined'}__`
-    if (type === 'quote')     replacement = `\n> ${selected || 'quote...'}\n`
-    if (type === 'divider')   replacement = `\n---\n`
+    let cursorOffset = 0 // where to place cursor inside the wrapper
+
+    if (type === 'bold') {
+      replacement = hasSelection ? `**${selected}**` : `****`
+      cursorOffset = hasSelection ? replacement.length : 2
+    }
+    if (type === 'italic') {
+      replacement = hasSelection ? `*${selected}*` : `**`
+      cursorOffset = hasSelection ? replacement.length : 1
+    }
+    if (type === 'underline') {
+      replacement = hasSelection ? `__${selected}__` : `____`
+      cursorOffset = hasSelection ? replacement.length : 2
+    }
+    if (type === 'quote') {
+      replacement = `\n> ${selected || ''}`
+      cursorOffset = replacement.length
+    }
+    if (type === 'divider') {
+      replacement = `\n---\n`
+      cursorOffset = replacement.length
+    }
 
     const newContent = before + replacement + after
     setDraftContent(newContent)
 
-    // Restore cursor after the inserted text
     setTimeout(() => {
       el.focus()
-      const pos = start + replacement.length
+      const pos = start + cursorOffset
       el.setSelectionRange(pos, pos)
     }, 0)
     haptic('light')

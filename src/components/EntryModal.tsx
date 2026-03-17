@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import React from 'react'
 import { useStore } from '@/store/useStore'
 import { useDeleteEntry } from '@/hooks/useSupabaseSync'
@@ -42,6 +42,30 @@ function renderMarkdown(text: string): React.ReactNode[] {
 export function EntryModal() {
   const handleDelete = useDeleteEntry()
   const { updateEntry } = useStore()
+
+  // Drag to close
+  const dragStartY = useRef<number | null>(null)
+  const [dragY, setDragY] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+
+  const onDragStart = (e: React.TouchEvent) => {
+    dragStartY.current = e.touches[0].clientY
+    setIsDragging(true)
+  }
+  const onDragMove = (e: React.TouchEvent) => {
+    if (dragStartY.current === null) return
+    const dy = e.touches[0].clientY - dragStartY.current
+    if (dy > 0) setDragY(dy)
+  }
+  const onDragEnd = () => {
+    if (dragY > 80) {
+      cancelEditing()
+      useStore.getState().setSelectedEntry(null)
+    }
+    setDragY(0)
+    setIsDragging(false)
+    dragStartY.current = null
+  }
   const {
     entries, selectedEntryId, setSelectedEntry, toggleFavorite,
     editingEntryId, editContent, editSubject, editMood,
@@ -69,8 +93,16 @@ export function EntryModal() {
 
   return (
     <div className="entry-overlay" onClick={e => { if (e.target === e.currentTarget) { cancelEditing(); setSelectedEntry(null) } }}>
-      <div className="entry-modal">
-        <div style={{ width: 32, height: 4, borderRadius: 2, background: 'var(--border)', margin: '0 auto 14px' }} />
+      <div className="entry-modal" style={{
+          transform: `translateY(${dragY}px)`,
+          transition: isDragging ? 'none' : 'transform 0.3s var(--spring)',
+        }}>
+        <div
+          onTouchStart={onDragStart}
+          onTouchMove={onDragMove}
+          onTouchEnd={onDragEnd}
+          style={{ width: 32, height: 4, borderRadius: 2, background: 'var(--border)', margin: '0 auto 14px', cursor: 'grab', touchAction: 'none' }}
+        />
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 14 }}>
