@@ -70,7 +70,8 @@ const SECTIONS: Section[] = [
       { tip: 'It works offline', detail: 'You can write entries even without internet. They save on your phone and sync to the cloud automatically when you\'re back online.' },
       { tip: 'Add to home screen', detail: 'Open the app in your browser, tap the share button, and choose "Add to Home Screen" -- it\'ll feel like a real app with its own icon.' },
       { tip: 'Streak', detail: 'Write at least one entry every day to keep your streak going. Miss a day and it resets. Hit 7, 14, or 30 days and something special happens 🎉' },
-      { tip: 'Tags are automatic', detail: 'The app reads what you write and quietly adds tags like #Gratitude, #Dream, #Work, #Anxiety without you doing anything.' },
+      { tip: 'Streak celebrations', detail: 'Write every day to build your streak. Hit 7, 14, or 30 days in a row and confetti rains down the screen with a little vibration — your phone celebrating with you.' },
+      { tip: 'Stickers', detail: 'You earn stickers for milestones — first entry (🌱), 3 day streak (🌿), 7 days (🌸), 14 days (🌺), 30 days (🌳), using all 6 moods (🎨), writing after midnight (🦉), writing before 7am (🐦), writing 500+ words in one entry (⚔️), and setting a time capsule (⏳).' },
     ]
   },
 ]
