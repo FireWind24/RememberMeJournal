@@ -100,12 +100,14 @@ export function EntryModal() {
   const collection = collections.find(c => c.id === entry.collectionId)
 
   return (
-    <div className="entry-overlay" onClick={e => { if (e.target === e.currentTarget) { cancelEditing(); setSelectedEntry(null) } }}>
+    <div className="entry-overlay" style={{ alignItems: isFullscreen ? 'flex-start' : 'flex-end' }} onClick={e => { if (e.target === e.currentTarget) { cancelEditing(); setSelectedEntry(null) } }}>
       <div className="entry-modal" style={{
           transform: `translateY(${dragY}px)`,
           transition: isDragging ? 'none' : 'all 0.35s var(--spring)',
-          maxHeight: isFullscreen ? '100%' : '82%',
+          maxHeight: isFullscreen ? '100dvh' : '82%',
+          minHeight: isFullscreen ? '100dvh' : '40%',
           borderRadius: isFullscreen ? '0' : '22px 22px 0 0',
+          paddingTop: isFullscreen ? 'max(16px, env(safe-area-inset-top))' : '16px',
         }}>
         <div
           onTouchStart={onDragStart}

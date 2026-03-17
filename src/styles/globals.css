@@ -352,8 +352,10 @@ html.dark .sun-btn { background: #2A2860; }
   padding: 16px;
   width: 100%;
   max-height: 82%;
+  min-height: 40%;
   overflow-y: auto;
   animation: slideUp 0.3s var(--spring);
+  flex-shrink: 0;
 }
 
 /* === Toast === */
