@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useState } from 'react'
+import { useEffect, useCallback, useState } from 'react'
 import { haptic } from '@/lib/haptics'
 import { useStore } from '@/store/useStore'
 
