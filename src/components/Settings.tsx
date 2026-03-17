@@ -8,7 +8,7 @@ import { HelpGuide } from './HelpGuide'
 
 export function Settings() {
   const {
-    user, entries, collections, darkMode, toggleDarkMode, setEntries,
+    user, entries, collections, darkMode, toggleDarkMode, setEntries, setUser,
     isAuthenticated, wordCountGoal, setWordCountGoal, theme, setTheme,
     deleteCollection, getDisplayStickers, displayName, setDisplayName,
   } = useStore()
@@ -32,7 +32,10 @@ export function Settings() {
   const earned      = getDisplayStickers()
   const recap       = useStore(s => s.getWeeklyRecap())
 
-  const handleSignOut = () => { signOut().finally(() => window.location.reload()) }
+  const handleSignOut = async () => {
+    try { await signOut() } catch {}
+    window.location.href = window.location.origin
+  }
 
   const handleEmailAuth = async () => {
     if (!email || !password) { setAuthError('Please enter email and password'); return }
