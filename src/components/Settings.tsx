@@ -239,9 +239,9 @@ export function Settings() {
               { label: 'Streak', value: `${recap.streak}d` },
               { label: 'Mood', value: recap.topMood ?? '—' },
             ].map(s => (
-              <div key={s.label} style={{ textAlign: 'center', background: 'rgba(255,255,255,0.15)', borderRadius: 8, padding: '6px 4px' }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: '#fff' }}>{s.value}</div>
-                <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.8)' }}>{s.label}</div>
+              <div key={s.label} style={{ textAlign: 'center', background: 'rgba(255,255,255,0.3)', borderRadius: 8, padding: '6px 4px' }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--sage-mid)' }}>{s.value}</div>
+                <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--sage-mid)', opacity: 0.8 }}>{s.label}</div>
               </div>
             ))}
           </div>
