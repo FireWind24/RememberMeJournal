@@ -71,64 +71,58 @@ export function Settings() {
 
 
   const handleExportPDF = () => {
-    const MOOD_COLORS: Record<string, string> = {
+    const moodColors: Record<string, string> = {
       joy: '#F6C95E', calm: '#8AB49A', sad: '#89A8C8',
       love: '#E8A0B4', fire: '#E8825A', dream: '#B8A0D8',
     }
-    const html = `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Remember Me — Journal</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Lora', serif; background: #FFFDD0; color: #4A3F4A; padding: 48px; }
-  .cover { text-align: center; padding: 80px 0 60px; border-bottom: 1px solid #E2D9CE; margin-bottom: 48px; }
-  .cover h1 { font-family: 'Quicksand', sans-serif; font-size: 36px; font-weight: 700; margin-bottom: 8px; }
-  .cover p { font-size: 14px; color: #9A8A9A; font-family: 'Quicksand', sans-serif; }
-  .entry { margin-bottom: 48px; padding-bottom: 48px; border-bottom: 1px solid #E2D9CE; page-break-inside: avoid; }
-  .entry:last-child { border-bottom: none; }
-  .entry-date { font-family: 'Quicksand', sans-serif; font-size: 11px; font-weight: 700; color: #9A8A9A; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; }
-  .mood-dot { width: 8px; height: 8px; border-radius: 50% 50% 0 50%; display: inline-block; flex-shrink: 0; }
-  .entry-subject { font-family: 'Quicksand', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 12px; line-height: 1.3; }
-  .entry-content { font-size: 15px; line-height: 1.9; white-space: pre-wrap; }
-  .entry-content strong { font-weight: 700; }
-  .entry-content em { font-style: italic; }
-  .entry-words { font-family: 'Quicksand', sans-serif; font-size: 10px; color: #9A8A9A; margin-top: 10px; }
-  @media print { body { background: white; } .cover { padding-top: 20px; } }
-</style>
-</head>
-<body>
-  <div class="cover">
-    <h1>Remember Me ✿</h1>
-    <p>Journal export &mdash; ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
-    <p style="margin-top:6px">${entries.length} entries</p>
-  </div>
-  ${entries.map(e => {
-    const d = new Date(e.createdAt)
-    const moodColor = e.mood ? MOOD_COLORS[e.mood] ?? '#8AB49A' : '#E2D9CE'
-    const moodLabel = e.mood ? e.mood.charAt(0).toUpperCase() + e.mood.slice(1) : ''
-    // Render markdown
-    const content = e.content
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      .replace(/__(.+?)__/g, '<u>$1</u>')
-      .replace(/^> (.+)$/gm, '<blockquote style="border-left:3px solid #8AB49A;padding-left:12px;color:#9A8A9A;font-style:italic">$1</blockquote>')
-      .replace(/^---$/gm, '<hr style="border:none;border-top:1px solid #E2D9CE;margin:12px 0">')
-    return \`<div class="entry">
-      <div class="entry-date">
-        <span class="mood-dot" style="background:\${moodColor}"></span>
-        \${d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' })} &middot; \${d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' })}
-        \${moodLabel ? \`&middot; \${moodLabel}\` : ''}
-      </div>
-      \${e.subject ? \`<div class="entry-subject">\${e.subject}</div>\` : ''}
-      <div class="entry-content">\${content}</div>
-      <div class="entry-words">\${e.wordCount} words</div>
-    </div>\`
-  }).join('')}
-</body>
-</html>`
+    const renderContent = (text: string) =>
+      text
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/__(.+?)__/g, '<u>$1</u>')
+        .replace(/^> (.+)$/gm, '<blockquote style="border-left:3px solid #8AB49A;padding-left:12px;color:#9A8A9A;font-style:italic;margin:6px 0">$1</blockquote>')
+        .replace(/^---$/gm, '<hr style="border:none;border-top:1px solid #E2D9CE;margin:12px 0">')
+        .replace(/\n/g, '<br>')
+
+    const entryRows = entries.map(e => {
+      const d = new Date(e.createdAt)
+      const dot = e.mood ? moodColors[e.mood] ?? '#E2D9CE' : '#E2D9CE'
+      const mood = e.mood ? e.mood.charAt(0).toUpperCase() + e.mood.slice(1) : ''
+      const dateStr = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+      const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+      const subject = e.subject ? '<div class="subject">' + e.subject + '</div>' : ''
+      const content = renderContent(e.content)
+      return (
+        '<div class="entry">' +
+        '<div class="meta"><span class="dot" style="background:' + dot + '"></span>' + dateStr + ' &middot; ' + timeStr + (mood ? ' &middot; ' + mood : '') + '</div>' +
+        subject +
+        '<div class="body">' + content + '</div>' +
+        '<div class="words">' + e.wordCount + ' words</div>' +
+        '</div>'
+      )
+    }).join('')
+
+    const exportDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Remember Me</title>' +
+      '<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">' +
+      '<style>' +
+      '* { margin:0; padding:0; box-sizing:border-box; }' +
+      'body { font-family: Lora, serif; background: #FFFDD0; color: #4A3F4A; padding: 48px; max-width: 680px; margin: 0 auto; }' +
+      '.cover { text-align:center; padding: 60px 0 48px; border-bottom: 1px solid #E2D9CE; margin-bottom: 48px; }' +
+      '.cover h1 { font-family: Quicksand, sans-serif; font-size: 32px; font-weight: 700; margin-bottom: 8px; }' +
+      '.cover p { font-size: 13px; color: #9A8A9A; font-family: Quicksand, sans-serif; }' +
+      '.entry { margin-bottom: 48px; padding-bottom: 48px; border-bottom: 1px solid #E2D9CE; page-break-inside: avoid; }' +
+      '.entry:last-child { border-bottom: none; }' +
+      '.meta { font-family: Quicksand, sans-serif; font-size: 11px; font-weight: 700; color: #9A8A9A; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }' +
+      '.dot { width: 8px; height: 8px; border-radius: 50% 50% 0 50%; display: inline-block; flex-shrink: 0; }' +
+      '.subject { font-family: Quicksand, sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 12px; line-height: 1.3; }' +
+      '.body { font-size: 15px; line-height: 1.9; }' +
+      '.words { font-family: Quicksand, sans-serif; font-size: 10px; color: #9A8A9A; margin-top: 10px; }' +
+      '@media print { body { background: white; padding: 32px; } }' +
+      '</style></head><body>' +
+      '<div class="cover"><h1>Remember Me ✿</h1><p>Exported ' + exportDate + '</p><p style="margin-top:4px">' + entries.length + ' entries</p></div>' +
+      entryRows +
+      '</body></html>'
 
     const win = window.open('', '_blank')
     if (!win) return
