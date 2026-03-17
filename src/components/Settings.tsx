@@ -8,7 +8,7 @@ import { HelpGuide } from './HelpGuide'
 
 export function Settings() {
   const {
-    user, entries, collections, darkMode, toggleDarkMode, setEntries, setUser,
+    user, entries, collections, darkMode, toggleDarkMode, setEntries,
     isAuthenticated, wordCountGoal, setWordCountGoal, theme, setTheme,
     deleteCollection, getDisplayStickers, displayName, setDisplayName,
   } = useStore()
