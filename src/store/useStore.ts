@@ -183,6 +183,13 @@ export const useStore = create<AppState>()(
               earnedStickers: [...new Set([...s.earnedStickers, ...newlyUnlocked])],
               newStickerUnlocked: newlyUnlocked[0],
             }))
+            // Persist stickers to Supabase so they survive cross-device login
+            const { user, earnedStickers: current } = get()
+            if (user) {
+              import('@/lib/supabase').then(({ upsertProfile }) => {
+                upsertProfile({ id: user.id, earnedStickers: [...new Set([...current, ...newlyUnlocked])] })
+              })
+            }
           }
           return newEntry
         } finally { set({ isSaving: false }) }

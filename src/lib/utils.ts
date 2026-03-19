@@ -84,15 +84,13 @@ export function checkNewStickers(
 }
 
 export function getAllEarnedStickers(
-  totalEntries: number, streak: number, usedMoods: Set<MoodKey>,
+  totalEntries: number, _streak: number, usedMoods: Set<MoodKey>,
   tags: string[], persistedStickers: StickerKey[]
 ): StickerKey[] {
+  // Only add non-streak stickers dynamically
+  // Streak stickers are persisted when earned so they survive streak breaks
   const all = new Set(persistedStickers)
   if (totalEntries >= 1)   all.add('first_entry')
-  if (streak >= 3)         all.add('streak_3')
-  if (streak >= 7)         all.add('streak_7')
-  if (streak >= 14)        all.add('streak_14')
-  if (streak >= 30)        all.add('streak_30')
   if (usedMoods.size >= 6) all.add('mood_variety')
   if (tags.filter(t => t === '#Gratitude').length >= 7) all.add('gratitude_week')
   if (tags.filter(t => t === '#Dream').length >= 5)     all.add('dream_journal')
