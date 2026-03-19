@@ -8,7 +8,7 @@ import { HelpGuide } from './HelpGuide'
 
 export function Settings() {
   const {
-    user, entries, collections, darkMode, toggleDarkMode, setEntries,
+    user, entries, collections, darkMode, toggleDarkMode, setEntries, setUser,
     isAuthenticated, wordCountGoal, setWordCountGoal, theme, setTheme,
     deleteCollection, getDisplayStickers, displayName, setDisplayName,
   } = useStore()
@@ -32,11 +32,19 @@ export function Settings() {
   const earned      = getDisplayStickers()
   const recap       = useStore(s => s.getWeeklyRecap())
 
-  const handleSignOut = async () => {
-    try { await signOut() } catch {}
-    // Clear persisted store so user is logged out locally too
+  const handleSignOut = () => {
+    // Clear everything locally first so UI responds immediately
     localStorage.removeItem('remember-me-store')
-    window.location.href = window.location.origin
+    // Clear all supabase auth keys
+    Object.keys(localStorage).forEach(k => {
+      if (k.startsWith('sb-')) localStorage.removeItem(k)
+    })
+    // Fire supabase signout in background then reload
+    signOut().catch(() => {}).finally(() => {
+      window.location.href = window.location.origin
+    })
+    // Reload anyway after 500ms in case signOut hangs
+    setTimeout(() => { window.location.href = window.location.origin }, 500)
   }
 
   const handleEmailAuth = async () => {
@@ -412,7 +420,7 @@ export function Settings() {
 
       <div style={{ height: 4 }} />
       <p style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, color: 'var(--muted)', paddingBottom: 8 }}>
-        made for Ammu with ❤️ by Umo
+        made by Umo with ❤️ for ammu
       </p>
     </div>
   )
