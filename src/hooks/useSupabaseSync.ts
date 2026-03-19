@@ -52,6 +52,13 @@ async function syncUser(sbUser: { id: string; email?: string; created_at: string
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   )
   setEntries(merged)
+
+  // Restore earnedStickers into store top-level (not just user object)
+  if (profile?.earnedStickers?.length) {
+    useStore.setState(s => ({
+      earnedStickers: [...new Set([...s.earnedStickers, ...profile.earnedStickers])]
+    }))
+  }
 }
 
 export function useSupabaseSync() {
