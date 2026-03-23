@@ -68,8 +68,14 @@ async function syncUser(sbUser: { id: string; email?: string; created_at: string
       updates.darkMode = (profile as {darkMode?: boolean}).darkMode
       if ((profile as {darkMode?: boolean}).darkMode) document.documentElement.classList.add('dark')
     }
-    if ((profile as {theme?: string}).theme && (profile as {theme?: string}).theme !== 'vanilla') {
+    if ((profile as {theme?: string}).theme) {
       updates.theme = (profile as {theme?: string}).theme
+      // Actually apply the theme CSS vars
+      import('@/store/useStore').then(({ useStore: s }) => {
+        const darkMode = (profile as {darkMode?: boolean}).darkMode ?? false
+        s.getState().setTheme((profile as {theme?: string}).theme as import('@/types').ThemeKey)
+        if (darkMode) s.getState().toggleDarkMode()
+      })
     }
     if (profile.displayName) updates.displayName = profile.displayName
     if (Object.keys(updates).length) useStore.setState(updates as Parameters<typeof useStore.setState>[0])
