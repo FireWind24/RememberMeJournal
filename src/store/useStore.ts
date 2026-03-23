@@ -212,15 +212,27 @@ export const useStore = create<AppState>()(
         set({ darkMode: next })
         document.documentElement.classList.toggle('dark', next)
         applyTheme(get().theme, next)
+        const { user } = get()
+        if (user) import('@/lib/supabase').then(({ savePreferences }) => savePreferences(user.id, { darkMode: next }))
       },
 
       setTheme: (theme: ThemeKey) => {
         set({ theme })
         applyTheme(theme, get().darkMode)
+        const { user } = get()
+        if (user) import('@/lib/supabase').then(({ savePreferences }) => savePreferences(user.id, { theme }))
       },
 
-      setWordCountGoal: (wordCountGoal: number) => set({ wordCountGoal }),
-      setDisplayName: (displayName: string) => set({ displayName }),
+      setWordCountGoal: (wordCountGoal: number) => {
+        set({ wordCountGoal })
+        const { user } = get()
+        if (user) import('@/lib/supabase').then(({ savePreferences }) => savePreferences(user.id, { wordCountGoal }))
+      },
+      setDisplayName: (displayName: string) => {
+        set({ displayName })
+        const { user } = get()
+        if (user) import('@/lib/supabase').then(({ savePreferences }) => savePreferences(user.id, { displayName }))
+      },
 
       startEditing: (id: string) => {
         const entry = get().entries.find((e: JournalEntry) => e.id === id)
@@ -243,6 +255,8 @@ export const useStore = create<AppState>()(
 
       addCollection: (name: string, emoji: string) => {
         const newCol: Collection = { id: uuidv4(), name, emoji, color: '#8AB49A', createdAt: new Date().toISOString() }
+        const { user } = get()
+        if (user) import('@/lib/supabase').then(({ upsertCollection }) => upsertCollection(user.id, newCol))
         set((s: AppState) => {
           const updated = [...s.collections, newCol]
           // unlock collector sticker
@@ -252,11 +266,15 @@ export const useStore = create<AppState>()(
           return { collections: updated }
         })
       },
-      deleteCollection: (id: string) => set((s: AppState) => ({
+      deleteCollection: (id: string) => {
+        const { user } = get()
+        if (user) import('@/lib/supabase').then(({ deleteCollectionRemote }) => deleteCollectionRemote(id))
+        set((s: AppState) => ({
         collections: s.collections.filter((c: Collection) => c.id !== id),
         entries: s.entries.map((e: JournalEntry) => e.collectionId === id ? { ...e, collectionId: null } : e),
-        activeCollection: s.activeCollection === id ? null : s.activeCollection,
-      })),
+          activeCollection: s.activeCollection === id ? null : s.activeCollection,
+        }))
+      },
 
       getFilteredEntries: () => {
         const { entries, searchQuery, activeCollection, showFavoritesOnly, dateFilter, dateFilterFrom, dateFilterTo } = get()

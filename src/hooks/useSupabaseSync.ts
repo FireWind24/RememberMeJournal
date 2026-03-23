@@ -3,7 +3,7 @@ import { useStore } from '@/store/useStore'
 import {
   supabase, isSupabaseConfigured,
   fetchEntries, upsertEntry, deleteEntryRemote,
-  fetchProfile,
+  fetchProfile, fetchCollections, upsertCollection, savePreferences,
 } from '@/lib/supabase'
 import type { JournalEntry } from '@/types'
 
@@ -53,11 +53,45 @@ async function syncUser(sbUser: { id: string; email?: string; created_at: string
   )
   setEntries(merged)
 
-  // Restore earnedStickers into store top-level (not just user object)
+  // Restore earnedStickers
   if (profile?.earnedStickers?.length) {
     useStore.setState(s => ({
       earnedStickers: [...new Set([...s.earnedStickers, ...profile.earnedStickers])]
     }))
+  }
+
+  // Restore preferences from Supabase
+  if (profile) {
+    const updates: Record<string, unknown> = {}
+    if (profile.wordCountGoal) updates.wordCountGoal = profile.wordCountGoal
+    if ((profile as {darkMode?: boolean}).darkMode !== undefined) {
+      updates.darkMode = (profile as {darkMode?: boolean}).darkMode
+      if ((profile as {darkMode?: boolean}).darkMode) document.documentElement.classList.add('dark')
+    }
+    if ((profile as {theme?: string}).theme && (profile as {theme?: string}).theme !== 'vanilla') {
+      updates.theme = (profile as {theme?: string}).theme
+    }
+    if (profile.displayName) updates.displayName = profile.displayName
+    if (Object.keys(updates).length) useStore.setState(updates as Partial<import('@/store/useStore').AppState>)
+  }
+
+  // Restore collections from Supabase
+  const remoteCollections = await fetchCollections(sbUser.id)
+  if (remoteCollections.length > 0) {
+    useStore.setState(s => {
+      const localIds = new Set(remoteCollections.map(c => c.id))
+      const localOnly = s.collections.filter(c => !localIds.has(c.id))
+      // Push local-only collections to Supabase
+      localOnly.forEach(c => upsertCollection(sbUser.id, c))
+      const merged = [...remoteCollections, ...localOnly]
+      return { collections: merged }
+    })
+  } else {
+    // Push any local collections to Supabase
+    const localCols = useStore.getState().collections
+    for (const col of localCols) {
+      await upsertCollection(sbUser.id, col)
+    }
   }
 }
 

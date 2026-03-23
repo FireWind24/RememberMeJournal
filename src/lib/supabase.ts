@@ -92,9 +92,19 @@ export async function upsertProfile(profile: Partial<UserProfile> & { id: string
       display_name: profile.displayName,
       avatar_url: profile.avatarUrl,
       earned_stickers: profile.earnedStickers ?? [],
+      reminder_time: (profile as {reminderTime?: string | null}).reminderTime ?? null,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'id' })
   if (error) console.error('upsertProfile:', error)
+}
+
+export async function saveReminderTime(userId: string, reminderTime: string | null): Promise<void> {
+  if (!supabase) return
+  const { error } = await supabase
+    .from('user_profiles')
+    .update({ reminder_time: reminderTime, updated_at: new Date().toISOString() })
+    .eq('id', userId)
+  if (error) console.error('saveReminderTime:', error)
 }
 
 // ─── Row mappers ──────────────────────────────────────────────────────────────
@@ -146,10 +156,64 @@ function dbRowToProfile(row: Record<string, unknown>): UserProfile {
     longestStreak: 0,
     totalEntries:  0,
     earnedStickers:(row.earned_stickers as import("@/types").StickerKey[]) ?? [],
-    wordCountGoal: 0, theme: 'vanilla' as import("@/types").ThemeKey, fontSize: 'md' as const,
+    wordCountGoal: (row.word_count_goal as number) ?? 0,
+    theme: ((row.theme as string) ?? 'vanilla') as import("@/types").ThemeKey,
+    fontSize: 'md' as const,
+    reminderTime:  (row.reminder_time as string) ?? null,
+    darkMode: (row.dark_mode as boolean) ?? false,
+    displayName: (row.display_name as string) ?? '',
     createdAt:     row.created_at as string,
     preferences: { lofiMode: 'off', showAiNudges: true, darkMode: false, fontSize: 'md' },
   }
+}
+
+
+// ─── Collections CRUD ─────────────────────────────────────────────────────────
+export async function fetchCollections(userId: string): Promise<import('@/types').Collection[]> {
+  if (!supabase) return []
+  const { data, error } = await supabase
+    .from('collections')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: true })
+  if (error) { console.error('fetchCollections:', error); return [] }
+  return (data ?? []).map(row => ({
+    id:        row.id as string,
+    name:      row.name as string,
+    emoji:     row.emoji as string,
+    color:     row.color as string,
+    createdAt: row.created_at as string,
+  }))
+}
+
+export async function upsertCollection(userId: string, col: import('@/types').Collection): Promise<void> {
+  if (!supabase) return
+  const { error } = await supabase.from('collections').upsert({
+    id: col.id, user_id: userId, name: col.name, emoji: col.emoji,
+    color: col.color, created_at: col.createdAt,
+  }, { onConflict: 'id' })
+  if (error) console.error('upsertCollection:', error)
+}
+
+export async function deleteCollectionRemote(collectionId: string): Promise<void> {
+  if (!supabase) return
+  const { error } = await supabase.from('collections').delete().eq('id', collectionId)
+  if (error) console.error('deleteCollectionRemote:', error)
+}
+
+export async function savePreferences(userId: string, prefs: {
+  wordCountGoal?: number; theme?: string; darkMode?: boolean; displayName?: string; reminderTime?: string | null
+}): Promise<void> {
+  if (!supabase) return
+  const { error } = await supabase.from('user_profiles').update({
+    word_count_goal:  prefs.wordCountGoal,
+    theme:            prefs.theme,
+    dark_mode:        prefs.darkMode,
+    display_name:     prefs.displayName,
+    reminder_time:    prefs.reminderTime,
+    updated_at:       new Date().toISOString(),
+  }).eq('id', userId)
+  if (error) console.error('savePreferences:', error)
 }
 
 // ─── SQL schema (run this once in Supabase SQL editor) ────────────────────────
