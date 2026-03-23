@@ -18,8 +18,11 @@ export function YearInPixels() {
 
   const dayMap = new Map<string, MoodKey>()
   entries.forEach(e => {
-    const d = e.createdAt.slice(0, 10)
-    if (d.startsWith(String(year)) && !dayMap.has(d)) {
+    const localDate = new Date(e.createdAt)
+    const d = localDate.getFullYear() + '-' +
+      String(localDate.getMonth() + 1).padStart(2, '0') + '-' +
+      String(localDate.getDate()).padStart(2, '0')
+    if (localDate.getFullYear() === year && !dayMap.has(d)) {
       if (e.mood) dayMap.set(d, e.mood)
       else dayMap.set(d, '__entry__' as MoodKey)
     }
