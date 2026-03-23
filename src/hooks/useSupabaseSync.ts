@@ -3,7 +3,7 @@ import { useStore } from '@/store/useStore'
 import {
   supabase, isSupabaseConfigured,
   fetchEntries, upsertEntry, deleteEntryRemote,
-  fetchProfile, fetchCollections, upsertCollection, savePreferences,
+  fetchProfile, fetchCollections, upsertCollection,
 } from '@/lib/supabase'
 import type { JournalEntry } from '@/types'
 
@@ -72,7 +72,7 @@ async function syncUser(sbUser: { id: string; email?: string; created_at: string
       updates.theme = (profile as {theme?: string}).theme
     }
     if (profile.displayName) updates.displayName = profile.displayName
-    if (Object.keys(updates).length) useStore.setState(updates as Partial<import('@/store/useStore').AppState>)
+    if (Object.keys(updates).length) useStore.setState(updates as Parameters<typeof useStore.setState>[0])
   }
 
   // Restore collections from Supabase

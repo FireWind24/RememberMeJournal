@@ -159,9 +159,6 @@ function dbRowToProfile(row: Record<string, unknown>): UserProfile {
     wordCountGoal: (row.word_count_goal as number) ?? 0,
     theme: ((row.theme as string) ?? 'vanilla') as import("@/types").ThemeKey,
     fontSize: 'md' as const,
-    reminderTime:  (row.reminder_time as string) ?? null,
-    darkMode: (row.dark_mode as boolean) ?? false,
-    displayName: (row.display_name as string) ?? '',
     createdAt:     row.created_at as string,
     preferences: { lofiMode: 'off', showAiNudges: true, darkMode: false, fontSize: 'md' },
   }
