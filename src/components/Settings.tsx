@@ -420,7 +420,7 @@ export function Settings() {
 
       <div style={{ height: 4 }} />
       <p style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, color: 'var(--muted)', paddingBottom: 8 }}>
-        made by Umo with ❤️ for ammu
+        Made for Ammu with ❤️ by Umo
       </p>
     </div>
   )
