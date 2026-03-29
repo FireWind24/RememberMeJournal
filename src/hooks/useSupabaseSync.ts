@@ -77,7 +77,8 @@ async function syncUser(sbUser: { id: string; email?: string; created_at: string
         if (darkMode) s.getState().toggleDarkMode()
       })
     }
-    if (profile.displayName) updates.displayName = profile.displayName
+    const localName = useStore.getState().displayName
+    if (profile.displayName && !localName) updates.displayName = profile.displayName
     if (Object.keys(updates).length) useStore.setState(updates as Parameters<typeof useStore.setState>[0])
   }
 
